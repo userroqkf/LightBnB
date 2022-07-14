@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const { Pool } = require('pg');
 
 module.exports = function(router, database) {
 
@@ -7,15 +8,15 @@ module.exports = function(router, database) {
     const user = req.body;
     user.password = bcrypt.hashSync(user.password, 12);
     database.addUser(user)
-    .then(user => {
-      if (!user) {
-        res.send({error: "error"});
-        return;
-      }
-      req.session.userId = user.id;
-      res.send("🤗");
-    })
-    .catch(e => res.send(e));
+      .then(user => {
+        if (!user) {
+          res.send({error: "error"});
+          return;
+        }
+        req.session.userId = user.id;
+        res.send("🤗");
+      })
+      .catch(e => res.send(e));
   });
 
   /**
@@ -25,13 +26,13 @@ module.exports = function(router, database) {
    */
   const login =  function(email, password) {
     return database.getUserWithEmail(email)
-    .then(user => {
-      if (bcrypt.compareSync(password, user.password)) {
-        return user;
-      }
-      return null;
-    });
-  }
+      .then(user => {
+        if (bcrypt.compareSync(password, user.password)) {
+          return user;
+        }
+        return null;
+      });
+  };
   exports.login = login;
 
   router.post('/login', (req, res) => {
@@ -73,4 +74,4 @@ module.exports = function(router, database) {
   });
 
   return router;
-}
+};
